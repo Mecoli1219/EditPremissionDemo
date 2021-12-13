@@ -8,7 +8,7 @@ const FrameSchema = new Schema({
     },
     data: {
         type: String,
-        required: [true, 'Data field is required.']
+        default: ""
     },
     editing: {
         type: Boolean,

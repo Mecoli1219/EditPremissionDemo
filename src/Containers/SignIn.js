@@ -42,7 +42,7 @@ const SignIn = (props) =>{
   return (
     <>
       <Title>
-        <h1>My Chat Room</h1>
+        <h1>Editor Demo</h1>
         <Space>
           <Button type="secondary" onClick={handleOnClick}>
             Sign Up

@@ -35,9 +35,11 @@ db.once('open', () => {
             const [task, payload] = JSON.parse(data)
             switch(task){
                 case 'add-request': {
-                    const {start} = payload
-                    const frame = new Frame({start, data: "init", editing: true})
-                    console.log(frame)
+                    const {start, editing} = payload
+                    const frame = new Frame({start, data: "", editing: true})
+                    if (editing){
+                        await Frame.findOneAndUpdate({start: editing}, {editing:false})
+                    }
                     try {
                         await frame.save()
                     } catch (e) {
@@ -48,10 +50,25 @@ db.once('open', () => {
                     //     type: 'success',
                     //     msg: 'Message sent.'
                     // }, ws)
-                    boardcastMessage(['add', [payload]], {
+                    sendData(['add', payload], ws)
+                    boardcastMessage(['add-all', [payload]], {
                         type: 'success',
                         msg: 'Frame generate.'
                     })
+                    break
+                }
+                case 'edit-request':{
+                    const {start, editing} = payload
+                    const newEditing = await Frame.findOne({start, editing: false})
+                    if (editing){
+                        await Frame.findOneAndUpdate({start: editing}, {editing:false})
+                    }
+                    if (!newEditing){
+                        sendData(["editing", {start: false}], ws)
+                    }else{
+                        await Frame.findOneAndUpdate({start}, {editing: true})
+                        sendData(["editing", {start}], ws)
+                    }
                     break
                 }
                 case 'clear': {

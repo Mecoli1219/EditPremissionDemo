@@ -5,6 +5,7 @@ const saltRounds = 10;
 
 const client = new WebSocket('ws://localhost:4000')
 const useChat = () => {
+    const [editing, setEditing] = useState(null);
     const [frames, setFrames] = useState([]);
     const [status, setStatus] = useState({});
     const [signedIn, setSignedIn] = useState(false)
@@ -19,7 +20,14 @@ const useChat = () => {
                 break
             }
             case "add": {
-                setFrames(()=>[...frames, ...payload])
+                setFrames(()=>[...frames, payload])
+                setEditing(parseInt(payload.start, 10))
+                break
+            }
+            case "editing": {
+                if (payload.start){
+                    setEditing(parseInt(payload.start, 10))
+                }
                 break
             }
             case "status": {
@@ -88,14 +96,20 @@ const useChat = () => {
     }
 
     const requestAddFrame = async(start) => {
-        sendData(["add-request", {start}])
+        sendData(["add-request", {start, editing}])
+    }
+
+    const requestEditFrame = async(start) => {
+        sendData(["edit-request", {start, editing}])
     }
 
     return{
+        editing,
         status,
         frames,
         clearFrames,
         requestAddFrame,
+        requestEditFrame,
         requireSignIn,
         signedIn,
         requireSignUp,

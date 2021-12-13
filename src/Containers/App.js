@@ -20,9 +20,18 @@ const Wrapper = styled.div`
 function App() {
   const savedMe = localStorage.getItem(LOCALSTORAGE_KEY);
 
-  const {status, frames, clearFrames, requestAddFrame, requireSignIn, signedIn, requireSignUp, clearAccount} = useChat()
-  const [body, setBody] = useState('')
-  const bodyRef = useRef(null)
+  const {
+    editing, 
+    status, 
+    frames, 
+    clearFrames, 
+    requestAddFrame,
+    requestEditFrame, 
+    requireSignIn, 
+    signedIn, 
+    requireSignUp, 
+    clearAccount
+  } = useChat()
   const [me, setMe] = useState(savedMe || "");
 
   const displayStatus = (payload) => {
@@ -59,12 +68,11 @@ function App() {
         <Editor 
           clearFrames={clearFrames}
           requestAddFrame={requestAddFrame}
+          requestEditFrame={requestEditFrame}
           frames={frames}
           me={me}
-          bodyRef={bodyRef}
           displayStatus={displayStatus}
-          setBody={setBody}
-          body={body}
+          nowEditing={editing}
         /> :
         <SignIn
           me={me} 
