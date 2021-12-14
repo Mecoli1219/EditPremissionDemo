@@ -30,8 +30,12 @@ function App() {
     requireSignIn, 
     signedIn, 
     requireSignUp, 
-    clearAccount
+    clearAccount,
+    key,
+    setKey,
+    doneEdit
   } = useChat()
+
   const [me, setMe] = useState(savedMe || "");
 
   const displayStatus = (payload) => {
@@ -73,6 +77,9 @@ function App() {
           me={me}
           displayStatus={displayStatus}
           nowEditing={editing}
+          tabKey={key}
+          setKey={setKey}
+          doneEdit={doneEdit}
         /> :
         <SignIn
           me={me} 

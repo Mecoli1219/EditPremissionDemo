@@ -6,7 +6,7 @@ import Message from "../Components/Message"
 import {useState, useRef} from "react"
 import AddModal from './AddModal'
 
-const {Paragraph} = Typography
+const {Text} = Typography
 
 const {TabPane} = Tabs
 
@@ -16,9 +16,10 @@ function useForceUpdate(){
 }
 
 const ChatRoom = (props) =>{
-  const [key, setKey] = useState(0)
+  // const [key, setKey] = useState(0)
   const [visible, setVisible] = useState(false)
   const addRef = useRef()
+  const dataRef = useRef()
   const [inChatBox, setInChatBox] = useState(false)
   const forceUpdate = useForceUpdate();
 
@@ -29,9 +30,11 @@ const ChatRoom = (props) =>{
     requestEditFrame,
     me,
     displayStatus,
-    nowEditing
+    nowEditing,
+    tabKey, setKey,
+    doneEdit
   } = props
-
+// console.log(key)
   const handleTabsOnChange = (key) => {
     setKey(key)
     setInChatBox(true)
@@ -55,15 +58,20 @@ const ChatRoom = (props) =>{
     setVisible(false)
     const start = parseInt(addRef.current.state.value, 10)
     addRef.current.state.value = ""
-    if (start < 0 || !start){
+    if ((start < 0 || !start) && start !== 0){
       displayStatus({
         type: "error",
         msg: "Please enter a positive number."
       })
       return
     }
-    requestAddFrame(start);
+    requestAddFrame(start, me);
     setInChatBox(false)
+  }
+
+  const handleDoneEditing = (start) => {
+    const data = dataRef.current.children[1].children[0].value
+    doneEdit(start, data)
   }
 
   return (
@@ -84,20 +92,31 @@ const ChatRoom = (props) =>{
         <Tabs
           type="editable-card"
           onChange={handleTabsOnChange}
-          activeKey={key}
+          activeKey={tabKey}
           onEdit={handleTabsEdit}
         >{frames.map(({start, data, editing}, i) => (
-          <TabPane tab={start+""} key={i} closable={false} style={{ height: "200px", overflow: "auto" }}>
-            <br/>
+          <TabPane tab={i+""} key={i} closable={false} style={{ height: "200px", overflow: "auto" }}>
+            <Text >Editing: {editing==="" ? "None": editing}</Text><br/>
+            <Text >Start: {start}</Text><br/>
             <TextField 
               id="data" 
               label="Data" 
               variant="outlined"
-              disabled={start === nowEditing ? undefined : true}
-              defaultValue={data} 
+              ref={i === nowEditing ? dataRef : undefined}
+              disabled={i === nowEditing ? undefined : true}
+              value={i === nowEditing ? undefined : data} 
             />
             <br/><br/>
-            <ButtonMui variant="contained" onClick={() => requestEditFrame(start)} disable={editing}>Edit</ButtonMui>
+            <ButtonMui 
+              variant="contained" 
+              onClick={() => requestEditFrame(start, me)} 
+              disabled={editing === "" ? undefined: true}
+            >Edit</ButtonMui>
+            <ButtonMui 
+              variant="contained" 
+              onClick={() => handleDoneEditing(start)} 
+              disabled={i === nowEditing ? undefined : true}
+            >Done</ButtonMui>
           </TabPane>
         ))}
         </Tabs>

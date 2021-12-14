@@ -11,8 +11,8 @@ const FrameSchema = new Schema({
         default: ""
     },
     editing: {
-        type: Boolean,
-        required: [true, 'Editing field is required']
+        type: String,
+        default: ""
     }
 })
 

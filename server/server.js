@@ -27,6 +27,15 @@ const boardcastMessage = (data, status) => {
     }) 
 }
 
+const boardcastMessageOther = (data, status, ws) => {
+    wss.clients.forEach((client) => {
+        if (client !== ws){
+            sendData(data, client);
+            sendStatus(status, client);
+        }
+    }) 
+}
+
 db.once('open', () => {
     wss.on('connection', (ws) => {
         initData(ws)
@@ -35,11 +44,18 @@ db.once('open', () => {
             const [task, payload] = JSON.parse(data)
             switch(task){
                 case 'add-request': {
-                    const {start, editing} = payload
-                    const frame = new Frame({start, data: "", editing: true})
+                    const {start, user} = payload
+                    const editing = await Frame.findOne({editing: user})
                     if (editing){
-                        await Frame.findOneAndUpdate({start: editing}, {editing:false})
+                        const cancelIndex = await Frame.find({start: {$lt: editing.start}}).count()
+                        boardcastMessage(['cancel', {index:cancelIndex}], {
+                            type: 'success',
+                            msg: `${user} cancel editing frame ${cancelIndex}.`
+                        })
+                        await Frame.findOneAndUpdate({editing: user}, {editing:""})
                     }
+                    const index = await Frame.find({start: {$lt: start}}).count()
+                    const frame = new Frame({start, data: "", editing: user})
                     try {
                         await frame.save()
                     } catch (e) {
@@ -50,25 +66,49 @@ db.once('open', () => {
                     //     type: 'success',
                     //     msg: 'Message sent.'
                     // }, ws)
-                    sendData(['add', payload], ws)
-                    boardcastMessage(['add-all', [payload]], {
+                    sendData(['add', {start, editing: user, data: '', index}], ws)
+                    boardcastMessageOther(['add-all', {start, editing: user, data: '', index}], {
                         type: 'success',
                         msg: 'Frame generate.'
-                    })
+                    }, ws)
                     break
                 }
                 case 'edit-request':{
-                    const {start, editing} = payload
-                    const newEditing = await Frame.findOne({start, editing: false})
+                    const {start, user} = payload
+                    const editing = await Frame.findOne({editing: user})
                     if (editing){
-                        await Frame.findOneAndUpdate({start: editing}, {editing:false})
+                        const cancelIndex = await Frame.find({start: {$lt: editing.start}}).count()
+                        boardcastMessage(['cancel', {index:cancelIndex}], {
+                            type: 'success',
+                            msg: `${user} cancel editing frame ${cancelIndex}.`
+                        })
+                        await Frame.findOneAndUpdate({editing: user}, {editing:""})
                     }
-                    if (!newEditing){
-                        sendData(["editing", {start: false}], ws)
+                    const index = await Frame.find({start: {$lt: start}}).count()
+                    const newEditing = await Frame.findOne({start})
+                    if (newEditing.editing === user || newEditing.editing === ""){
+                        await Frame.findOneAndUpdate({start}, {editing: user})
+                        sendData(["edit", {index, user, data:newEditing.data}], ws)   
+                        boardcastMessageOther(['edit-all', {editing: user, index}], {
+                            type: 'success',
+                            msg: `user ${user} is editing frame ${index}.`
+                        }, ws)                     
                     }else{
-                        await Frame.findOneAndUpdate({start}, {editing: true})
-                        sendData(["editing", {start}], ws)
+                        sendStatus({
+                            type: "error",
+                            msg: `user ${newEditing.editing} is editing.`
+                        }, ws)
                     }
+                    break
+                }
+                case 'done': {
+                    const {start, data} = payload
+                    const index = await Frame.find({start: {$lt: start}}).count()
+                    await Frame.findOneAndUpdate({start}, {data, editing: ""})
+                    boardcastMessage(['done', {index, data}], {
+                        type: 'success',
+                        msg: `frame ${index} update!.`
+                    })
                     break
                 }
                 case 'clear': {

@@ -6,10 +6,12 @@ const saltRounds = 10;
 const client = new WebSocket('ws://localhost:4000')
 const useChat = () => {
     const [editing, setEditing] = useState(null);
+    const [key, setKey] = useState(0)
     const [frames, setFrames] = useState([]);
     const [status, setStatus] = useState({});
     const [signedIn, setSignedIn] = useState(false)
     const [passwordCache, setPasswordCache] = useState("")
+    
 
     client.onmessage = async (byteString) => {
         const {data} = byteString;
@@ -20,14 +22,43 @@ const useChat = () => {
                 break
             }
             case "add": {
-                setFrames(()=>[...frames, payload])
-                setEditing(parseInt(payload.start, 10))
+                const {start, data, index} = payload
+                const newEditing = payload.editing
+                setFrames(()=>[...frames.slice(0, index), {start, editing:newEditing, data}, ...frames.slice(index)])
+                setEditing(index)
+                console.log(index)
+                setKey(index*1+"")
                 break
             }
-            case "editing": {
-                if (payload.start){
-                    setEditing(parseInt(payload.start, 10))
+            case "add-all": {
+                const {start, data, index} = payload
+                const newEditing = payload.editing
+                setFrames(()=>[...frames.slice(0, index), {start, editing:newEditing, data}, ...frames.slice(index)])
+                if(editing >= index){
+                    setEditing(editing+1)
+                    setKey((key*1+1)+"")
                 }
+                break
+            }
+            case "cancel": {
+                const {index} = payload
+                setFrames(()=>[...frames.slice(0, index), {...frames[index], editing: ""}, ...frames.slice(index+1)])
+                break
+            }
+            case "edit": {
+                const {index, user} = payload
+                setEditing(parseInt(index, 10))
+                setFrames(()=>[...frames.slice(0, index), {...frames[index], editing: user}, ...frames.slice(index+1)])
+                break
+            }
+            case "edit-all": {
+                const {index, editing} = payload
+                setFrames(()=>[...frames.slice(0, index), {...frames[index], editing}, ...frames.slice(index+1)])
+                break
+            }
+            case "done": {
+                const {index, data} = payload
+                setFrames(()=>[...frames.slice(0, index), {...frames[index], editing: "", data}, ...frames.slice(index+1)])
                 break
             }
             case "status": {
@@ -95,12 +126,17 @@ const useChat = () => {
         sendData(['sign up', {name: me, password: hash}])
     }
 
-    const requestAddFrame = async(start) => {
-        sendData(["add-request", {start, editing}])
+    const requestAddFrame = async(start, me) => {
+        sendData(["add-request", {start, user: me}])
     }
 
-    const requestEditFrame = async(start) => {
-        sendData(["edit-request", {start, editing}])
+    const requestEditFrame = async(start, me) => {
+        sendData(["edit-request", {start, user: me}])
+    }
+
+    const doneEdit = (start, data) => {
+        sendData(["done", {start, data}])
+        setEditing(null)
     }
 
     return{
@@ -113,7 +149,10 @@ const useChat = () => {
         requireSignIn,
         signedIn,
         requireSignUp,
-        clearAccount
+        clearAccount,
+        key,
+        setKey,
+        doneEdit
     }
 }
 
