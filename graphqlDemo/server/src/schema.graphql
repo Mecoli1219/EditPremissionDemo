@@ -1,0 +1,86 @@
+type Query{
+  getFrames: [Frame!]!
+  getUsers: [User!]!
+}
+
+type Mutation {
+  register(name: String!, password: String!): RegisterResponse!
+  login(name: String!, password: String!): LoginResponse!
+  addFrame(frame: addFrameInput!): FrameResponse!
+  editFrame(frame: editFrameInput!): FrameResponse!
+  editRequest(request: editRequestInput!): EditRequestResponse!
+  clearFrame: ClearResponse!
+}
+type Subscription {
+  frame: FrameSubscriptionPayload!
+}
+type Frame{
+  id: ID!
+  start: Float!
+  data: String!
+  editing: String!
+}
+input addFrameInput{
+  start: Float!
+  data: String!
+  editing: String!
+}
+input editFrameInput{
+  start: Float!
+  data: String!
+}
+input editRequestInput{
+  start: Float!
+  editing: String!
+}
+type User{
+  id: ID!
+  name: String!
+}
+
+type RegisterResponse {
+  ok: Boolean!
+  user: User
+  errors: [Error!]
+}
+type LoginResponse {
+  ok: Boolean!
+  errors: [Error!]
+}
+type FrameResponse {
+  ok: Boolean!
+  frame: Frame
+  index: Int!
+  cancelIndex: Int
+  deleteIndex: Int
+  errors: [Error!]
+}
+type EditRequestResponse{
+  ok: Boolean!
+  index: Int
+  cancelIndex: Int
+  editing: String
+  errors: [Error!]
+}
+type ClearResponse{
+  ok: Boolean!
+  errors: [Error!]
+}
+type Error {
+    path: String!
+    message: String
+  }
+
+enum MutationType {
+  EDITED_WITHOUT_SEQUENCE_CHANGE
+  EDIT_REQUEST
+  ADDED
+  CLEARED
+}
+
+type FrameSubscriptionPayload{
+  mutation: MutationType!
+  addFrame: FrameResponse
+  editRequest: EditRequestResponse
+  editFrame: FrameResponse
+}
