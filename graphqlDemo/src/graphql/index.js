@@ -6,5 +6,6 @@ export {
   EDITREQUEST_MUTATION,
   EDITFRAME_MUTATION,
   CLEARFRAME_MUTATION,
+  CLEARACCOUNT_MUTATION,
 } from "./mutations";
 export { FRAME_SUBSCRIPTION } from "./subscriptions";

@@ -10,6 +10,7 @@ type Mutation {
   editFrame(frame: editFrameInput!): FrameResponse!
   editRequest(request: editRequestInput!): EditRequestResponse!
   clearFrame: ClearResponse!
+  clearAccount: ClearResponse!
 }
 type Subscription {
   frame: FrameSubscriptionPayload!

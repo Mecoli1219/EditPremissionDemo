@@ -206,6 +206,13 @@ const Mutation = {
       ok: true,
     };
   },
+  clearAccount: async (parent, _, { Account, Frame, pubsub }) => {
+    await Account.deleteMany({});
+
+    return {
+      ok: true,
+    };
+  },
 };
 
 export default Mutation;

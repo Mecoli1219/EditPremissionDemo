@@ -4,19 +4,14 @@ import Title from "../Components/Title";
 import { useState, useRef } from "react";
 import SignUpModal from "./SignUpModal";
 import { useQuery, useMutation } from "@apollo/react-hooks";
-import { REGISTER_MUTATION, SIGNIN_MUTATION } from "../graphql";
+import {
+  REGISTER_MUTATION,
+  SIGNIN_MUTATION,
+  CLEARACCOUNT_MUTATION,
+} from "../graphql";
 
 const SignIn = (props) => {
-  const {
-    me,
-    setMe,
-    displayStatus,
-    requireSignIn,
-    requireSignUp,
-    clearAccount,
-    setStatus,
-    setSignedIn,
-  } = props;
+  const { me, setMe, displayStatus, setStatus, setSignedIn } = props;
 
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
@@ -24,6 +19,7 @@ const SignIn = (props) => {
   const passwordRef = useRef();
   const [register] = useMutation(REGISTER_MUTATION);
   const [signin] = useMutation(SIGNIN_MUTATION);
+  const [clearAccount] = useMutation(CLEARACCOUNT_MUTATION);
 
   const handleOnClick = () => {
     setVisible(true);
@@ -74,7 +70,13 @@ const SignIn = (props) => {
             type="primary"
             danger
             onClick={() => {
-              clearAccount();
+              clearAccount().then(({ data }) => {
+                if (data.clearAccount.ok) {
+                  setStatus({ type: "success", msg: "account cleared" });
+                } else {
+                  setStatus({ type: "error", msg: "clear account fail" });
+                }
+              });
               displayStatus({
                 type: "success",
                 msg: "clear Account",

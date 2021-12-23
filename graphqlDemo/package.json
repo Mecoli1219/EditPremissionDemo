@@ -43,8 +43,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "server": "nodemon server/server.js --ext js --watch src --exec babel-node",
-    "gserver": "nodemon server/src/index.js --ext js --watch src --exec babel-node",
+    "server": "nodemon server/src/index.js --ext js --watch src --exec babel-node",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

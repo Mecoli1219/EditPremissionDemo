@@ -82,8 +82,9 @@ const ChatRoom = (props) => {
                     frame,
                     ...newFrame.slice(index),
                   ];
-                  console.log(index);
-                  if (editing >= index) {
+                  console.log("change from other: ", index);
+                  if (editing >= index && editing !== null) {
+                    console.log("here", editing, index);
                     setEditing(editing + 1);
                     setKey(tabKey * 1 + 1 + "");
                   }
@@ -131,6 +132,7 @@ const ChatRoom = (props) => {
               break;
             }
             case "CLEARED": {
+              setEditing(null);
               return { getFrames: [] };
             }
             default: {

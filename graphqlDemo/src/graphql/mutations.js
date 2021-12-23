@@ -55,3 +55,11 @@ export const CLEARFRAME_MUTATION = gql`
     }
   }
 `;
+
+export const CLEARACCOUNT_MUTATION = gql`
+  mutation clearAccount {
+    clearAccount {
+      ok
+    }
+  }
+`;

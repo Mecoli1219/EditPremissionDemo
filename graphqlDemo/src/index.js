@@ -14,6 +14,7 @@ import {
 import { split } from "apollo-link";
 import { WebSocketLink } from "apollo-link-ws";
 import { getMainDefinition } from "apollo-utilities";
+import { SubscriptionClient } from "subscriptions-transport-ws";
 
 // Create an http link:
 const httpLink = new HttpLink({
@@ -21,11 +22,15 @@ const httpLink = new HttpLink({
 });
 
 // Create a WebSocket link:
-const wsLink = new WebSocketLink({
-  uri: `ws://localhost:5000`,
-  options: { reconnect: true },
-});
+// const wsLink = new WebSocketLink({
+//   uri: `ws://localhost:5000`,
+//   options: { reconnect: true },
+// });
 
+const wsClient = new SubscriptionClient(`ws://localhost:5000`, {
+  reconnect: true,
+});
+const wsLink = new WebSocketLink(wsClient);
 // using the ability to split links, you can send data to each link
 // depending on what kind of operation is being sent
 const link = split(
@@ -40,6 +45,10 @@ const link = split(
   wsLink,
   httpLink
 );
+
+wsClient.onConnected(() => console.log("websocket connected!!"));
+wsClient.onDisconnected(() => console.log("websocket disconnected!!"));
+wsClient.onReconnected(() => console.log("websocket reconnected!!"));
 
 const client = new ApolloClient({
   link,
