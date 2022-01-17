@@ -1,6 +1,5 @@
 const Query = {
-    async users(parent, args, {db, login}){
-        if (!login) throw new Error("Not Login")
+    async users(parent, args, {db}){
         const users = await db.User.find()
         return users
     },

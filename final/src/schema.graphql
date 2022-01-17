@@ -6,4 +6,5 @@ type Query {
 type User {
   id: ID!
   userID: String! 
+  name: String!
 }

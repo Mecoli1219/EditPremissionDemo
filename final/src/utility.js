@@ -1,17 +1,21 @@
 import model from "./models"
 import dotenv from "dotenv-defaults"
 import bcrypt from "bcryptjs"
+import userData from "./data/user.json"
 
 dotenv.config();
-
-const {ADMIN_USERID, ADMIN_PASSWORD} = process.env 
 
 const initData = async() => {
     await model.User.deleteMany()
     const saltRounds = 10;
-    const password = await bcrypt.hash(ADMIN_PASSWORD, saltRounds)
-    const admin = new model.User({userID: ADMIN_USERID, password})
-    await admin.save()
+    await Promise.all(
+        userData.map(async(data)=> {
+            const {userID, name, password} = data;
+            const newPassword = await bcrypt.hash(password, saltRounds)
+            const user = new model.User({userID, password: newPassword, name})
+            await user.save()
+        })
+    )
 }
 
 export {

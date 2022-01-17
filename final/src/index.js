@@ -59,6 +59,7 @@ const {SECRET_KEY} = process.env;
       try {
         const token = req.headers.authorization || '';
         const splitToken = token.split(' ')[1]
+        if (!splitToken) throw new Error("Token not found")
         const result = jwt.verify(splitToken, SECRET_KEY)
         const {userID} = result
         const user = await db.User.findOne({userID})
