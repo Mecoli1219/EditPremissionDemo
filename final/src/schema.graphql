@@ -3,6 +3,10 @@ type Query {
   user: User!
 }
 
+type Subscription{
+  user: String
+}
+
 type User {
   id: ID!
   userID: String! 

@@ -38,16 +38,37 @@ const {SECRET_KEY} = process.env;
   const schema = makeExecutableSchema({ typeDefs, resolvers })
   const pubsub = new PubSub()
 
-  const subscriptionBuildOptions = async (connectionParams,webSocket) => {                      
-    return { db, pubsub }
+  const subscriptionBuildOptions = async (connectionParams,webSocket) => { 
+    try {
+      const token = connectionParams.Authorization || '';
+      const splitToken = token.split(' ')[1]
+      if (!splitToken) throw new Error("Token not found")
+      const result = jwt.verify(splitToken, SECRET_KEY)
+      const {userID} = result
+      const user = await db.User.findOne({userID})
+      if (user){
+          return { db, userID, pubsub };
+      }else{
+          throw new Error("User not found!")
+      }
+    } catch (e) {}
   } 
+
+  const subscriptionDestroyOptions = async (webSocket, context) => {
+    const initialContext = await context.initPromise
+    if (initialContext){
+      const {userID} = initialContext;
+      // TODO: delete this user from editing
+    }
+  }
 
   const subscriptionServer = SubscriptionServer.create(
     { 
       schema, 
       execute, 
       subscribe ,
-      onConnect: subscriptionBuildOptions
+      onConnect: subscriptionBuildOptions,
+      onDisconnect: subscriptionDestroyOptions
     },
     { server: httpServer, path: '/graphql' }
   );

@@ -5,7 +5,7 @@ import Subscription from "./Subscription"
 export default {
     Query,
     // Mutation,
-    // Subscription
+    Subscription
 }
 
 
