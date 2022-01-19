@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 // Creating a schema, sort of like working with an ORM
 const ControlSchema = new Schema({
   frame: {
-    type: mongoose.Type.ObjectId,
+    type: mongoose.Types.ObjectId,
     ref: "ControlFrame",
   },
   type: {

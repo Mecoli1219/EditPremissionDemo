@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 // Creating a schema, sort of like working with an ORM
 const PositionSchema = new Schema({
   frame: {
-    type: mongoose.Type.ObjectId,
+    type: mongoose.Types.ObjectId,
     ref: "PositionFrame",
     required: [true, "position frame field is required."],
   },
