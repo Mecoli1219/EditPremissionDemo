@@ -40,16 +40,13 @@ const {SECRET_KEY} = process.env;
 
   const subscriptionBuildOptions = async (connectionParams,webSocket) => { 
     try {
-      const token = connectionParams.Authorization || '';
-      const splitToken = token.split(' ')[1]
-      if (!splitToken) throw new Error("Token not found")
-      const result = jwt.verify(splitToken, SECRET_KEY)
-      const {userID} = result
-      const user = await db.User.findOne({userID})
+      const { name, userID } = connectionParams
+      if (!userID || !name) throw new Error("UserID and name must be filled.")
+      const user = await db.User.findOne({name, userID})
       if (user){
-          return { db, userID, pubsub };
+        return { db, userID, pubsub };
       }else{
-          throw new Error("User not found!")
+        throw new Error("User not found.")
       }
     } catch (e) {}
   } 
@@ -59,6 +56,7 @@ const {SECRET_KEY} = process.env;
     if (initialContext){
       const {userID} = initialContext;
       // TODO: delete this user from editing
+      await db.User.deleteOne({userID})
     }
   }
 
@@ -78,20 +76,14 @@ const {SECRET_KEY} = process.env;
     schema,
     context: async({req}) => {
       try {
-        const token = req.headers.authorization || '';
-        const splitToken = token.split(' ')[1]
-        if (!splitToken) throw new Error("Token not found")
-        const result = jwt.verify(splitToken, SECRET_KEY)
-        const {userID} = result
-        const user = await db.User.findOne({userID})
-        if (user){
-            return { db, userID, pubsub };
-        }else{
-            throw new Error("User not found!")
+        const { name, userid } = req.headers
+        if (!userid || !name) throw new Error("UserID and name must be filled.")
+        const user = await db.User.findOne({name, userID: userid})  
+        if (!user){
+          const newUser = await new db.User({name, userID: userid}).save()
         }
-      } catch (e) {
-        console.log(e)
-      }
+        return { db, userID: userid, pubsub }
+      } catch (e) {}
     },
     plugins: [
       {
