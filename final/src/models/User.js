@@ -6,10 +6,6 @@ const userSchema = new Schema({
     type: String,
     required: [true, "userID field is required."],
   },
-  password: {
-    type: String,
-    required: [true, "Password field is required."],
-  },
   name: {
     type: String,
     required: [true, "Name field is required."],
