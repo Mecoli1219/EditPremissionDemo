@@ -1,3 +1,14 @@
 type Query {
-  users: String
+  users: [User!]
+  user: User!
+}
+
+type Subscription{
+  user: String
+}
+
+type User {
+  id: ID!
+  userID: String! 
+  name: String!
 }
